@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Word Spark</title><link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0051ba">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23215b33'/%3E%3Cpolygon points='0,0 70,0 0,70' fill='%230051ba'/%3E%3Cpolygon points='70,0 100,0 100,30 30,100 0,100 0,70' fill='%23fcd116'/%3E%3Ccircle cx='10' cy='10' r='4' fill='white'/%3E%3Ccircle cx='30' cy='10' r='4' fill='white'/%3E%3Ccircle cx='10' cy='30' r='4' fill='white'/%3E%3Ccircle cx='30' cy='30' r='4' fill='white'/%3E%3Ccircle cx='20' cy='20' r='4' fill='white'/%3E%3C/svg%3E">
+  <style>
+    body { font-family: sans-serif; margin: 0; text-align: center; background: #f4f7f2; }
+    header { padding: 30px 10px; color:hwb(247 63% 16%);
+      background: linear-gradient(160deg, #0051ba 0 38%, #fcd116 38% 62%, #215b33 62% 100%); }
+    h1 { margin: 0; font-size: 36px; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+    .controls { margin: 20px 10px; }
+    label { display: block; margin: 12px 0 4px; font-weight: bold; color: #215b33; }
+    select, input { font-size: 18px; padding: 8px; width: 180px; text-align: center; }
+    button { font-size: 20px; padding: 12px 30px; margin-top: 16px; border: 3px solid #fcd116;
+      border-radius: 10px; background: #215b33; color: whitesmoke; cursor: pointer; }
+    #out { margin: 20px 10px; font-size: 22px; color: #0051ba; line-height: 1.8; }
+    .w { display: inline-block; margin: 4px 8px; padding: 2px 10px;
+      border-bottom: 3px solid #fcd116; }
+  </style>
+</head>
+<body>
+  <header><h1>Word Spark</h1></header>
+
+  <div class="controls">
+    <label>Mode</label>
+    <select id="mode">
+      <option value="all">All</option>
+      <option value="noun">Nouns</option>
+      <option value="pronoun">Pronouns</option>
+      <option value="verb">Verbs</option>
+      <option value="adjective">Adjectives</option>
+      <option value="adverb">Adverbs</option>
+      <option value="preposition">Prepositions</option>
+      <option value="conjunction">Conjunctions</option>
+      <option value="interjection">Interjections</option>
+    </select>
+
+    <label>How many? (1 to 100)</label>
+    <input type="number" id="count" min="1" max="100" value="5">
+
+    <br>
+    <button onclick="generate()">Generate</button>
+  </div>
+
+  <div id="out"></div>
+
+  <script>
+    const lists = {
+      noun: ["AA","aadvark","abacus","abandonment","river","lantern","thunder","bicycle","orchard","compass","ember","meadow","puzzle","harbor","pebble","canyon","feather","glacier","monsoon","horizon","anchor","blossom","dolphin","echo","fountain","galaxy","hammock","island","jungle","kettle","lagoon","mosaic","nectar","oasis","coconut","canoe"],
+      pronoun: ["I","you","he","she","it","we","they","me","him","her","us","them","myself","yourself","himself","herself","itself","ourselves","themselves","who","whom","whose","which","that","this","these","those","someone","anyone","everyone","nobody","something","everything","nothing","mine","yours","ours","theirs"],
+      verb: ["abandon","desert","leave","forsake","jilt","give up","renounce","relinquish","forswear","abase","whisper","wander","climb","gather","drift","shimmer","paddle","carve","bounce","explore","juggle","listen","mumble","navigate","observe","polish","quiver","ripple","stumble","tumble","unfold","vanish","weave","yearn","zigzag","sketch","glide","harvest","invent","launch","melt","nibble"],
+      adjective: ["a","abandoned","velvet","golden","gentle","fierce","quiet","brilliant","crooked","dusty","eager","fragile","glossy","humble","icy","jolly","keen","lively","misty","narrow","odd","proud","rapid","shiny","tender","unusual","vivid","warm","young","zesty","ancient","bold","calm","distant"],
+      adverb: ["aback","taken aback","quickly","slowly","gently","loudly","quietly","happily","boldly","bravely","carefully","clearly","eagerly","firmly","gladly","honestly","kindly","lightly","nearly","often","rarely","softly","suddenly","swiftly","tightly","warmly","always","never","soon","here","there","today","almost","together"],
+      preposition: ["in","on","at","under","over","above","below","beside","between","behind","beyond","across","through","toward","around","along","against","among","during","before","after","within","without","near","inside","outside","upon","into","onto","from","with","about","until","beneath","despite"],
+      conjunction: ["and","but","or","nor","for","yet","so","because","although","while","since","unless","whereas","if","though","until","once","whether","before","after","as","than","when","where"],
+      interjection: ["wow","oh","hey","ouch","yay","oops","hooray","alas","bravo","hmm","phew","ugh","yikes","whoa","aha","gosh","huh","eek","cheers","goodness","dang","psst","shh","hurray","oho","yippee","ahoy","bingo"]
+    };
+
+    function shuffle(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generate() {
+      const mode = document.getElementById("mode").value;
+      let n = parseInt(document.getElementById("count").value);
+      if (isNaN(n) || n < 1) n = 1;
+      if (n > 100) n = 100;
+      document.getElementById("count").value = n;
+
+      const pool = mode === "all"
+        ? [].concat(...Object.values(lists))
+        : lists[mode].slice();
+
+      let result = [];
+      while (result.length < n) {
+        result = result.concat(shuffle(pool.slice()));
+      }
+      result = result.slice(0, n);
+
+      document.getElementById("out").innerHTML =
+        result.map(w => '<span class="w">' + w + '</span>').join(" ");
+    }
+  </script>
+</body>
+</html>
