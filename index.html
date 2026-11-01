@@ -1,92 +1,113 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Word Spark</title><link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0051ba">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23215b33'/%3E%3Cpolygon points='0,0 70,0 0,70' fill='%230051ba'/%3E%3Cpolygon points='70,0 100,0 100,30 30,100 0,100 0,70' fill='%23fcd116'/%3E%3Ccircle cx='10' cy='10' r='4' fill='white'/%3E%3Ccircle cx='30' cy='10' r='4' fill='white'/%3E%3Ccircle cx='10' cy='30' r='4' fill='white'/%3E%3Ccircle cx='30' cy='30' r='4' fill='white'/%3E%3Ccircle cx='20' cy='20' r='4' fill='white'/%3E%3C/svg%3E">
-  <style>
-    body { font-family: sans-serif; margin: 0; text-align: center; background: #f4f7f2; }
-    header { padding: 30px 10px; color:hwb(247 63% 16%);
-      background: linear-gradient(160deg, #0051ba 0 38%, #fcd116 38% 62%, #215b33 62% 100%); }
-    h1 { margin: 0; font-size: 36px; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
-    .controls { margin: 20px 10px; }
-    label { display: block; margin: 12px 0 4px; font-weight: bold; color: #215b33; }
-    select, input { font-size: 18px; padding: 8px; width: 180px; text-align: center; }
-    button { font-size: 20px; padding: 12px 30px; margin-top: 16px; border: 3px solid #fcd116;
-      border-radius: 10px; background: #215b33; color: whitesmoke; cursor: pointer; }
-    #out { margin: 20px 10px; font-size: 22px; color: #0051ba; line-height: 1.8; }
-    .w { display: inline-block; margin: 4px 8px; padding: 2px 10px;
-      border-bottom: 3px solid #fcd116; }
-  </style>
-</head>
-<body>
-  <header><h1>Word Spark</h1></header>
-
-  <div class="controls">
-    <label>Mode</label>
-    <select id="mode">
-      <option value="all">All</option>
-      <option value="noun">Nouns</option>
-      <option value="pronoun">Pronouns</option>
-      <option value="verb">Verbs</option>
-      <option value="adjective">Adjectives</option>
-      <option value="adverb">Adverbs</option>
-      <option value="preposition">Prepositions</option>
-      <option value="conjunction">Conjunctions</option>
-      <option value="interjection">Interjections</option>
-    </select>
-
-    <label>How many? (1 to 100)</label>
-    <input type="number" id="count" min="1" max="100" value="5">
-
-    <br>
-    <button onclick="generate()">Generate</button>
-  </div>
-
-  <div id="out"></div>
-
-  <script>
-    const lists = {
-      noun: ["AA","aadvark","abacus","abandonment","river","lantern","thunder","bicycle","orchard","compass","ember","meadow","puzzle","harbor","pebble","canyon","feather","glacier","monsoon","horizon","anchor","blossom","dolphin","echo","fountain","galaxy","hammock","island","jungle","kettle","lagoon","mosaic","nectar","oasis","coconut","canoe"],
-      pronoun: ["I","you","he","she","it","we","they","me","him","her","us","them","myself","yourself","himself","herself","itself","ourselves","themselves","who","whom","whose","which","that","this","these","those","someone","anyone","everyone","nobody","something","everything","nothing","mine","yours","ours","theirs"],
-      verb: ["abandon","desert","leave","forsake","jilt","give up","renounce","relinquish","forswear","abase","whisper","wander","climb","gather","drift","shimmer","paddle","carve","bounce","explore","juggle","listen","mumble","navigate","observe","polish","quiver","ripple","stumble","tumble","unfold","vanish","weave","yearn","zigzag","sketch","glide","harvest","invent","launch","melt","nibble"],
-      adjective: ["a","abandoned","velvet","golden","gentle","fierce","quiet","brilliant","crooked","dusty","eager","fragile","glossy","humble","icy","jolly","keen","lively","misty","narrow","odd","proud","rapid","shiny","tender","unusual","vivid","warm","young","zesty","ancient","bold","calm","distant"],
-      adverb: ["aback","taken aback","quickly","slowly","gently","loudly","quietly","happily","boldly","bravely","carefully","clearly","eagerly","firmly","gladly","honestly","kindly","lightly","nearly","often","rarely","softly","suddenly","swiftly","tightly","warmly","always","never","soon","here","there","today","almost","together"],
-      preposition: ["in","on","at","under","over","above","below","beside","between","behind","beyond","across","through","toward","around","along","against","among","during","before","after","within","without","near","inside","outside","upon","into","onto","from","with","about","until","beneath","despite"],
-      conjunction: ["and","but","or","nor","for","yet","so","because","although","while","since","unless","whereas","if","though","until","once","whether","before","after","as","than","when","where"],
-      interjection: ["wow","oh","hey","ouch","yay","oops","hooray","alas","bravo","hmm","phew","ugh","yikes","whoa","aha","gosh","huh","eek","cheers","goodness","dang","psst","shh","hurray","oho","yippee","ahoy","bingo"]
-    };
-
-    function shuffle(a) {
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    function generate() {
-      const mode = document.getElementById("mode").value;
-      let n = parseInt(document.getElementById("count").value);
-      if (isNaN(n) || n < 1) n = 1;
-      if (n > 100) n = 100;
-      document.getElementById("count").value = n;
-
-      const pool = mode === "all"
-        ? [].concat(...Object.values(lists))
-        : lists[mode].slice();
-
-      let result = [];
-      while (result.length < n) {
-        result = result.concat(shuffle(pool.slice()));
-      }
-      result = result.slice(0, n);
-
-      document.getElementById("out").innerHTML =
-        result.map(w => '<span class="w">' + w + '</span>').join(" ");
-    }
-  </script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d2b53">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>A1 to C2</title>
+<style>
+:root{--bg:#f5f6f2;--ink:#1b2236;--mute:#667086;--card:#fff;--line:#dde0e6;--acc:#1d2b53;--on:#fff;--ok:#2f8f6b}
+@media(prefers-color-scheme:dark){:root{--bg:#10141f;--ink:#eceef4;--mute:#9aa3b8;--card:#1a2031;--line:#2b3348;--acc:#9db4ff;--on:#10141f;--ok:#5fcf9f}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom))}
+header{padding:20px 18px 6px}
+h1{margin:0;font-size:30px;letter-spacing:-.5px;font-weight:800}
+h1 span{color:var(--mute);font-weight:500}
+.sub{color:var(--mute);margin:2px 0 0;font-size:14px}
+main{padding:10px 14px;max-width:640px;margin:auto}
+section{display:none}section.on{display:block}
+h2{font-size:18px;margin:22px 4px 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.card h3{margin:0 0 4px;font-size:16px}
+.card p,.card li{margin:4px 0;font-size:15px}.card ul{padding-left:18px;margin:6px 0}
+.mute{color:var(--mute)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;color:var(--mute);font:600 13px system-ui;padding:10px 2px;border-radius:10px}
+nav button.on{color:var(--on);background:var(--acc)}
+.lv{display:flex;gap:12px;align-items:flex-start;border-left-width:6px}
+.lv b.c{font-size:22px;min-width:44px;font-weight:800}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{min-width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:none;color:var(--ink);font:700 15px system-ui}
+.chip.d{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn{background:var(--acc);color:var(--on);border:0;border-radius:12px;padding:14px 18px;font:700 16px system-ui;width:100%;margin:6px 0}
+.btn.alt{background:none;color:var(--ink);border:1.5px solid var(--line)}
+.seg{display:flex;gap:6px}.seg button{flex:1}
+.topic{font-size:28px;font-weight:800;text-align:center;margin:18px 0 6px;letter-spacing:-.5px}
+.time{font-size:64px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0}
+.phase{text-align:center;color:var(--mute);min-height:24px}
+.ex{font-style:italic;color:var(--mute)}
+a{color:var(--acc)}
+</style></head><body>
+<header><h1>A1 <span>to</span> C2</h1><p class="sub">English speaking, one level at a time. Works offline.</p></header>
+<main>
+<section id="plan" class="on"></section>
+<section id="levels"></section>
+<section id="frames"></section>
+<section id="practice"></section>
+</main>
+<nav id="nav"></nav>
+<script>
+const LEVELS=[["A1","Beginner","Uses basic expressions and simple phrases to communicate basic needs. Pauses frequently to recall words.","#8fb996"],
+["A2","Elementary","Handles routine, daily tasks and short conversations. Expresses immediate thoughts using simple sentence structures.","#5fa8a0"],
+["B1","Intermediate","Speaks comfortably on familiar topics, personal interests and daily situations. Can describe experiences, events and ambitions.","#4f86b8"],
+["B2","Upper-Intermediate","Speaks with a degree of fluency and spontaneity. Connects ideas smoothly, joins debates and explains complex viewpoints without noticeable strain.","#5a68b5"],
+["C1","Advanced","Speaks fluently, flexibly and naturally across academic, professional and social contexts. Uses complex grammar, rich vocabulary and subtle phrasing easily.","#7b5aa6"],
+["C2","Mastery / Great Speaker","Speaks with complete native-like precision, dynamic cadence and emotional resonance. Masterful with tone, nuance, persuasion and spontaneous rhetoric.","#a8456e"]];
+const PATH=[["1. Build Active Recall & Cadence","B1 to B2","Focus on speaking speed and thought-to-speech connection rather than perfect grammar.",["Shadowing: listen to high-level speakers and repeat their exact words at the same time, matching rhythm and stress.","Timed monologues: pick a random topic daily and speak for 2 minutes without pausing or using filler words."]],
+["2. Expand Idiomatic & Nuanced Vocabulary","B2 to C1","Shift from simple descriptive language to dynamic, expressive word choices and connectors.",["Phrasal verbs and idioms: use transitions like \"On the flip side\" and \"To put that in perspective\".","Eliminate fillers: replace \"um\" and \"like\" with deliberate micro-silences."]],
+["3. Master Rhetoric & Spontaneous Pitching","C1 to C2","Focus on influence, tone adjustment and rapid structure under pressure.",["Impromptu speaking: answer unexpected prompts with PREP or Problem-Solution-Benefit.","Record and analyze: record your speaking weekly to refine intonation, volume and pace."]]];
+const FR=[["PREP","Best for expressing opinions","Use when asked for your perspective, in debates, or when answering direct questions.",[["Point","State your main point in one sentence."],["Reason","Explain why, using \"This is mainly because...\""],["Example","Give a brief story, fact or experience: \"For instance...\""],["Point","Restate your point with fresh emphasis: \"That is why...\""]],"Point: Daily speaking practice matters more than grammar rules. Reason: Real conversation needs rapid word recall. Example: After I recorded 2-minute speeches daily, my hesitation dropped within two weeks. Point: So for real fluency, lean toward active speaking."],
+["Problem, Solution, Benefit","Best for pitching and persuasion","Use when proposing an idea, making a recommendation, or explaining how to fix an issue.",[["Problem","Define the pain point or challenge clearly."],["Solution","Offer your specific action or solution."],["Benefit","Explain the positive outcome of taking that action."]],"Problem: Many learners freeze because they translate full sentences in their heads. Solution: Switch to shadowing, repeating native speech aloud. Benefit: Your brain adopts natural rhythm and phrases directly, removing the translation delay."],
+["Past, Present, Future","Best for storytelling and updates","Use for personal introductions, career updates, or tracking progress over time.",[["Past","Where things started or how the background was set."],["Present","The current state of affairs."],["Future","What comes next: the goal or expected outcome."]],""]];
+const PLAN=[["Week 1: Cadence, Pronunciation & Muscle Memory","Overcome physical hesitation and build vocal momentum.",[
+[1,3,"The Shadowing Technique",15,["Pick a 2-minute audio clip of an English speaker whose tone you like.","Listen once, then replay it while speaking along out loud, matching their rhythm, pauses and emphasis."]],
+[4,5,"Eliminating Fillers",15,["Choose a basic topic (e.g. \"My favorite movie\"). Record a 2-minute monologue.","Rule: when you need to think, pause in silence instead of saying \"um\", \"ah\" or \"like\". Re-record until you have zero fillers."]],
+[6,7,"Speed Drills",15,["Look at 5 random objects in your room. Describe each out loud for 60 seconds without stopping."]]]],
+["Week 2: Vocabulary Expansion & Connector Phrases","Move from basic words to fluid, expressive transitions.",[
+[8,10,"Transitional Linking",20,["Use 3 advanced connectors daily: \"On the flip side...\", \"To put that into context...\", \"Having said that...\"","Speak on a topic and force yourself to pivot using these phrases."]],
+[11,13,"The Synonym Swap",20,["Take simple sentences and replace basic adjectives out loud (\"It was very good\" becomes \"It was exceptionally impactful\")."]],
+[14,14,"Weekly Review & Self-Audit",20,["Record a 3-minute speech on any topic. Listen back and count your total pause length and word variety."]]]],
+["Week 3: Structured Spontaneous Speaking","Internalize rhetoric frameworks for clear delivery.",[
+[15,18,"PREP Drills",20,["Pick 2 opinion questions daily (e.g. \"Is working from home better than working in an office?\").","Deliver a 2-minute response using Point, Reason, Example, Point."]],
+[19,21,"PSB Drills",20,["Identify 2 practical problems daily. Deliver a 2-minute presentation proposing a solution using Problem, Solution, Benefit."]]]],
+["Week 4: Rhetorical Mastery & Pressure Testing","Refine tone, presence and rapid execution.",[
+[22,25,"Impromptu Rapid-Fire",20,["Get a random word or abstract topic (use the Practice tab). Wait 10 seconds, then deliver a coherent 90-second speech."]],
+[26,28,"Tone & Emphasis Modulation",20,["Read a short paragraph aloud 3 times, changing tone each time: authoritative and slow, energetic and fast, calm and persuasive."]],
+[29,30,"Final Assessment",30,["Deliver a full 5-minute presentation on a complex topic without notes.","Record video to review eye contact, body posture, pacing and clarity."]]]]];
+const TOPICS=["Patience","A city I love","Why sleep matters","Trust","My first job","Money","The future of work","Teamwork","A skill everyone should learn","Home","Courage","Technology and kids","The best meal I ever had","Change","Leadership","Friendship","Water","A mistake I learned from","Success","Community","Silence","Education","Travel","Honesty","Time","Is working from home better?","Should school start later?","Ambition","A problem in my town","Gratitude"];
+const $=s=>document.querySelector(s),esc=s=>s.replace(/</g,"&lt;");
+let done={};try{done=JSON.parse(localStorage.getItem("a1c2")||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem("a1c2",JSON.stringify(done))}catch(e){}};
+function renderPlan(){const n=Object.keys(done).length;let h=`<div class="card"><h3>${n} of 30 days done</h3><div class="bar"><i style="width:${n/30*100}%"></i></div><p class="mute">20 to 30 minutes a day. Tap a day number when you finish it.</p></div>`;
+PLAN.forEach(([t,g,bl])=>{h+=`<h2>${t}</h2><p class="mute" style="margin:0 4px">Goal: ${g}</p>`;
+bl.forEach(([a,b,name,m,st])=>{let c="";for(let d=a;d<=b;d++)c+=`<button class="chip ${done[d]?"d":""}" data-d="${d}">${d}</button>`;
+h+=`<div class="card"><h3>${a==b?"Day "+a:"Days "+a+" to "+b}: ${name}</h3><p class="mute">${m} min a day</p><ul>${st.map(s=>`<li>${esc(s)}</li>`).join("")}</ul><div class="chips">${c}</div></div>`})});
+h+=`<button class="btn alt" id="rst">Reset progress</button>`;$("#plan").innerHTML=h;
+document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const d=b.dataset.d;done[d]?delete done[d]:done[d]=1;save();renderPlan()});
+$("#rst").onclick=()=>{if(confirm("Clear all progress?")){done={};save();renderPlan()}}}
+function renderLevels(){let h=`<h2>Six stages of speaking</h2>`+LEVELS.map(([c,n,d,col])=>`<div class="card lv" style="border-left-color:${col}"><b class="c" style="color:${col}">${c}</b><div><h3>${n}</h3><p>${d}</p></div></div>`).join("")+`<h2>Your pathway</h2>`+PATH.map(([t,r,f,l])=>`<div class="card"><h3>${t}</h3><p class="mute">${r}. ${f}</p><ul>${l.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");$("#levels").innerHTML=h}
+function renderFrames(){$("#frames").innerHTML=`<h2>Frameworks for spontaneous thought</h2><p class="mute" style="margin:0 4px">A mental structure stops rambling and keeps you clear.</p>`+FR.map(([t,s,u,st,ex])=>`<div class="card"><h3>${t}</h3><p class="mute">${s}. ${u}</p><ul>${st.map(([a,b])=>`<li><b>${a}:</b> ${esc(b)}</li>`).join("")}</ul>${ex?`<p class="ex">${esc(ex)}</p>`:""}</div>`).join("")}
+let T={t:null,left:0,ph:"",mode:"imp",topic:""};
+const MODES={imp:{n:"Impromptu",prep:10,talk:90},mono:{n:"Monologue",prep:0,talk:120},speed:{n:"Speed",prep:0,talk:60}};
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.25)}catch(e){}if(navigator.vibrate)navigator.vibrate(200)}
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+function newTopic(){T.topic=TOPICS[Math.floor(Math.random()*TOPICS.length)];stop();renderPractice()}
+function stop(){clearInterval(T.t);T.t=null;T.ph="";T.left=MODES[T.mode].talk}
+function start(){if(T.t)return stop(),renderPractice();const m=MODES[T.mode];let ph=m.prep?"prep":"talk";T.ph=ph;T.left=ph=="prep"?m.prep:m.talk;paint();
+T.t=setInterval(()=>{T.left--;if(T.left<=0){beep();if(T.ph=="prep"){T.ph="talk";T.left=m.talk}else{clearInterval(T.t);T.t=null;T.ph="end";T.left=0}}paint();if(!T.t)renderPractice()},1000)}
+function paint(){const e=$("#tm");if(!e)return;e.textContent=fmt(T.left);$("#ph").textContent=T.ph=="prep"?"Think. Speech starts soon.":T.ph=="talk"?"Speak now.":""}
+function renderPractice(){if(!T.topic)T.topic=TOPICS[0];if(!T.left&&T.ph!="end")T.left=MODES[T.mode].talk;
+const m=MODES[T.mode];$("#practice").innerHTML=`<h2>Practice timer</h2><div class="seg">${Object.entries(MODES).map(([k,v])=>`<button class="btn ${k==T.mode?"":"alt"}" data-m="${k}">${v.n}</button>`).join("")}</div>
+<div class="card"><p class="mute" style="text-align:center">${m.prep?m.prep+" seconds to think, then ":""}speak for ${m.talk>=120?m.talk/60+" minutes":m.talk+" seconds"} without filler words.</p><div class="topic">${esc(T.topic)}</div><div class="time" id="tm">${fmt(T.left)}</div><div class="phase" id="ph">${T.ph=="end"?"Done. Record yourself and listen back.":""}</div></div>
+<button class="btn" id="go">${T.t?"Stop":"Start"}</button><button class="btn alt" id="nt">New topic</button>`;
+document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{T.mode=b.dataset.m;stop();T.left=MODES[T.mode].talk;renderPractice()});
+$("#go").onclick=()=>{T.ph=="end"&&(T.ph="");start();renderPractice();paint()};$("#nt").onclick=newTopic}
+const TABS=[["plan","30 days"],["levels","Levels"],["frames","Frameworks"],["practice","Practice"]];
+$("#nav").innerHTML=TABS.map(([k,l])=>`<button data-t="${k}" class="${k=="plan"?"on":""}">${l}</button>`).join("");
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button,section").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#"+b.dataset.t).classList.add("on");scrollTo(0,0)});
+renderPlan();renderLevels();renderFrames();renderPractice();
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
